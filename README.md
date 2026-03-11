@@ -1,7 +1,3 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Test/exploration project for Azure Databricks (ADB) serving endpoints with Claude models. Scripts demonstrate calling Claude Opus 4.6 hosted on Databricks through both OpenAI-compatible and Anthropic-native API formats.
