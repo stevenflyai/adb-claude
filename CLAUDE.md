@@ -8,7 +8,7 @@ Test/exploration project for Azure Databricks (ADB) serving endpoints with Claud
 
 ## Key Findings (documented in scripts)
 
-- **Prompt caching**: Only works via Anthropic native format through `/invocations` endpoint (not OpenAI-compatible format). Requires `anthropic-beta: prompt-caching-2024-07-31` header and `cache_control` in system blocks.
+- **Prompt caching**: Works in both OpenAI-compatible and Anthropic native formats. The only requirement is `cache_control: {"type": "ephemeral"}` in the content block. For OpenAI format, change system `content` from string to array: `{"role": "system", "content": [{"type": "text", "text": "...", "cache_control": {"type": "ephemeral"}}]}`. The `anthropic-beta` header is not required.
 - **Web search**: Anthropic native `web_search` tool type not supported by Databricks (returns 400). Use OpenAI function-calling format with client-side search instead.
 - **MCP tools**: Work via OpenAI function-calling format — convert MCP tool definitions to OpenAI format, then forward tool calls back to MCP server.
 
@@ -21,7 +21,8 @@ All scripts are standalone — no shared modules or build system. Each script lo
 | `adb-sample.py` | Minimal chat completion | OpenAI-compatible |
 | `adb-mcp.py` | MCP tool integration (GitHub server) with agentic loop | OpenAI-compatible |
 | `databricks_websearch.py` | Client-side web search via function calling | Raw HTTP to `/invocations` |
-| `test_databricks_anthropic_cache.py` | Prompt caching comparison (OpenAI vs Anthropic native format) | Both formats |
+| `test_databricks_anthropic_cache.py` | Prompt caching 2x2 matrix test (cache_control x beta header) | Both formats |
+| `test_ttft.py` | TTFT (Time To First Token) benchmark with streaming | OpenAI-compatible |
 
 ## Running Scripts
 
@@ -48,4 +49,4 @@ python test_databricks_anthropic_cache.py
 
 **OpenAI-compatible** (used by `adb-sample.py`, `adb-mcp.py`): Use the `openai` Python SDK with `base_url` pointed at Databricks. Model name: `databricks-claude-opus-4-6`.
 
-**Anthropic native via `/invocations`** (used by `test_databricks_anthropic_cache.py`): POST directly to `{base_url}/{endpoint}/invocations` with Anthropic Messages API payload format (`anthropic_version`, `system` as array, `messages`). This is required for features like prompt caching that Databricks doesn't expose through the OpenAI-compatible layer.
+**Anthropic native via `/invocations`** (used by `test_databricks_anthropic_cache.py`): POST directly to `{base_url}/{endpoint}/invocations` with Anthropic Messages API payload format (`anthropic_version`, `system` as array, `messages`). Supports prompt caching, though OpenAI-compatible format now supports it too (see prompt caching finding above).
